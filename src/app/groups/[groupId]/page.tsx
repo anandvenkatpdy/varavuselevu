@@ -26,6 +26,11 @@ export default async function GroupDetailPage({
   const balances = await computeGroupMemberBalances(groupId);
   const transactions = simplifyDebts(balances);
   const activity = await getGroupActivity(groupId, user.id);
+
+  const totalExpenseCents = await prisma.expense.aggregate({
+    where: { groupId },
+    _sum: { amountCents: true },
+  }).then((r) => r._sum.amountCents ?? 0);
   const returnTo = `/groups/${group.id}`;
 
   const participants = group.members.map((m) => ({
@@ -41,6 +46,9 @@ export default async function GroupDetailPage({
         <h1 className="text-2xl font-bold">{group.name}</h1>
         <p className="text-sm text-zinc-500">
           {group.members.length} members · {group.currency}
+        </p>
+        <p className="mt-1 text-sm font-medium text-zinc-700">
+          Total trip cost: {formatMoney(totalExpenseCents, group.currency)}
         </p>
       </div>
 

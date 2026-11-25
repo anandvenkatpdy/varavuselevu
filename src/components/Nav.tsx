@@ -9,7 +9,7 @@ export default async function Nav() {
     <header className="border-b border-zinc-200 bg-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <Link href="/dashboard" className="text-lg font-bold text-emerald-700">
-          Splitsy
+          VaravuSelavu
         </Link>
         {user && (
           <nav className="flex items-center gap-5 text-sm font-medium text-zinc-600">

@@ -3,7 +3,7 @@ import Nav from "@/components/Nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Splitsy",
+  title: "VaravuSelavu",
   description: "Split expenses with friends and groups",
 };
 
