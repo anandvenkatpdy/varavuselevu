@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  groupMemberships  GroupMember[]
+  expensesPaid      Expense[]       @relation("ExpensePayer")
+  expensesCreated   Expense[]       @relation("ExpenseCreator")
+  expenseShares     ExpenseShare[]
+  friendshipsA      Friendship[]    @relation("FriendshipUserA")
+  friendshipsB      Friendship[]    @relation("FriendshipUserB")
+  paymentsSent      Payment[]       @relation("PaymentFrom")
+  paymentsReceived  Payment[]       @relation("PaymentTo")
+}
+
+// Undirected friendship, always stored with userAId < userBId
+model Friendship {
+  id      String @id @default(cuid())
+  userAId String
+  userBId String
+  userA   User   @relation("FriendshipUserA", fields: [userAId], references: [id])
+  userB   User   @relation("FriendshipUserB", fields: [userBId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userAId, userBId])
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  currency  String   @default("INR")
+  createdAt DateTime @default(now())
+
+  members  GroupMember[]
+  expenses Expense[]
+  payments Payment[]
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  groupId  String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+}
+
+enum SplitType {
+  EQUAL
+  EXACT
+  PERCENT
+  SHARES
+}
+
+enum Category {
+  GENERAL
+  FOOD
+  GROCERIES
+  TRANSPORT
+  HOUSING
+  UTILITIES
+  ENTERTAINMENT
+  TRAVEL
+  SHOPPING
+  HEALTH
+  OTHER
+}
+
+model Expense {
+  id          String    @id @default(cuid())
+  description String
+  amountCents Int
+  currency    String    @default("INR")
+  category    Category  @default(GENERAL)
+  splitType   SplitType @default(EQUAL)
+  date        DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  groupId String?
+  group   Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  paidById String
+  paidBy   User   @relation("ExpensePayer", fields: [paidById], references: [id])
+
+  createdById String
+  createdBy   User   @relation("ExpenseCreator", fields: [createdById], references: [id])
+
+  shares ExpenseShare[]
+}
+
+model ExpenseShare {
+  id          String @id @default(cuid())
+  expenseId   String
+  userId      String
+  shareCents  Int // amount this user owes of the expense
+  rawInput    Float? // the % or share count originally entered, for display when editing
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([expenseId, userId])
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  amountCents Int
+  currency    String   @default("INR")
+  date        DateTime @default(now())
+  note        String?
+  createdAt   DateTime @default(now())
+
+  groupId String?
+  group   Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  fromUserId String
+  fromUser   User   @relation("PaymentFrom", fields: [fromUserId], references: [id])
+
+  toUserId String
+  toUser   User   @relation("PaymentTo", fields: [toUserId], references: [id])
+}
