@@ -32,39 +32,40 @@ export default async function GroupsPage() {
   );
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Groups</h1>
+    <div className="flex flex-col gap-5">
+      <h1 className="text-xl font-bold text-zinc-900">Groups</h1>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
-        <h2 className="mb-3 font-semibold text-zinc-900">Create a group</h2>
+      <div className="rounded-2xl bg-white border border-zinc-100 p-4">
+        <h2 className="text-sm font-semibold text-zinc-700 mb-3">Create a group</h2>
         <CreateGroupForm friends={friends} />
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
-        {groupBalances.length === 0 ? (
-          <p className="text-sm text-zinc-500">You&apos;re not in any groups yet.</p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {groupBalances.map(({ group, myBalance }) => (
-              <li key={group.id} className="flex items-center justify-between py-3">
+      {groupBalances.length === 0 ? (
+        <p className="text-sm text-zinc-500 text-center py-8">No groups yet. Create one above.</p>
+      ) : (
+        <div className="rounded-2xl bg-white border border-zinc-100 divide-y divide-zinc-100">
+          {groupBalances.map(({ group, myBalance }) => (
+            <Link
+              key={group.id}
+              href={`/groups/${group.id}`}
+              className="flex items-center justify-between px-4 py-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold">
+                  {group.name[0].toUpperCase()}
+                </div>
                 <div>
-                  <Link
-                    href={`/groups/${group.id}`}
-                    className="font-medium text-zinc-900 hover:text-emerald-700"
-                  >
-                    {group.name}
-                  </Link>
-                  <p className="text-xs text-zinc-500">
-                    {group.members.length} member
-                    {group.members.length === 1 ? "" : "s"} · {group.currency}
+                  <p className="text-sm font-medium text-zinc-900">{group.name}</p>
+                  <p className="text-xs text-zinc-400">
+                    {group.members.length} member{group.members.length === 1 ? "" : "s"}
                   </p>
                 </div>
-                <BalanceText amountCents={myBalance} currency={group.currency} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+              </div>
+              <BalanceText amountCents={myBalance} currency={group.currency} />
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

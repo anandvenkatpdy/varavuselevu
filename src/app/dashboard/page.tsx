@@ -7,6 +7,7 @@ import { getRecentActivity } from "@/lib/activity";
 import { formatMoney } from "@/lib/money";
 import BalanceText from "@/components/BalanceText";
 import ActivityFeed from "@/components/ActivityFeed";
+import { logout } from "@/lib/actions/auth";
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -38,95 +39,103 @@ export default async function DashboardPage() {
   const activity = await getRecentActivity(user.id, 10);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="rounded-lg border border-zinc-200 bg-white p-6">
-        <p className="text-sm text-zinc-500">Overall balance</p>
-        <p
-          className={`mt-1 text-3xl font-bold ${
-            overallCents === 0
-              ? "text-zinc-700"
-              : overallCents > 0
-              ? "text-emerald-700"
-              : "text-rose-600"
-          }`}
-        >
-          {overallCents === 0
-            ? "You're all settled up"
+    <div className="flex flex-col gap-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs text-zinc-500 uppercase tracking-wide">Welcome back</p>
+          <h1 className="text-xl font-bold text-zinc-900">{user.name}</h1>
+        </div>
+        <form action={logout}>
+          <button className="text-xs text-zinc-400 hover:text-zinc-600 px-3 py-1 rounded-full border border-zinc-200">
+            Log out
+          </button>
+        </form>
+      </div>
+
+      {/* Overall balance card */}
+      <div
+        className={`rounded-2xl p-5 text-white ${
+          overallCents === 0
+            ? "bg-zinc-600"
             : overallCents > 0
-            ? `You are owed ${formatMoney(overallCents)}`
-            : `You owe ${formatMoney(Math.abs(overallCents))}`}
+            ? "bg-emerald-700"
+            : "bg-rose-600"
+        }`}
+      >
+        <p className="text-sm opacity-80">Overall balance</p>
+        <p className="mt-1 text-3xl font-bold">
+          {overallCents === 0
+            ? "All settled up"
+            : overallCents > 0
+            ? formatMoney(overallCents)
+            : `-${formatMoney(Math.abs(overallCents))}`}
+        </p>
+        <p className="mt-1 text-sm opacity-70">
+          {overallCents > 0 ? "you are owed" : overallCents < 0 ? "you owe" : ""}
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-lg border border-zinc-200 bg-white p-5">
-          <div className="mb-3 flex items-center justify-between">
+      {/* Friends */}
+      {friends.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-zinc-900">Friends</h2>
-            <Link href="/friends" className="text-sm text-emerald-700">
-              View all
-            </Link>
+            <Link href="/friends" className="text-xs text-emerald-700 font-medium">View all</Link>
           </div>
-          {friends.length === 0 ? (
-            <p className="text-sm text-zinc-500">
-              No friends yet.{" "}
-              <Link href="/friends" className="text-emerald-700">
-                Add one
+          <div className="rounded-2xl bg-white border border-zinc-100 divide-y divide-zinc-100">
+            {friends.slice(0, 5).map((f) => (
+              <Link
+                key={f.id}
+                href={`/friends/${f.id}`}
+                className="flex items-center justify-between px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold text-sm">
+                    {f.name[0].toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-zinc-900">{f.name}</span>
+                </div>
+                <BalanceText amountCents={netMap.get(f.id) ?? 0} />
               </Link>
-              .
-            </p>
-          ) : (
-            <ul className="divide-y divide-zinc-100">
-              {friends.map((f) => (
-                <li key={f.id} className="flex items-center justify-between py-2">
-                  <Link
-                    href={`/friends/${f.id}`}
-                    className="text-sm font-medium text-zinc-900 hover:text-emerald-700"
-                  >
-                    {f.name}
-                  </Link>
-                  <BalanceText amountCents={netMap.get(f.id) ?? 0} />
-                </li>
-              ))}
-            </ul>
-          )}
+            ))}
+          </div>
         </div>
+      )}
 
-        <div className="rounded-lg border border-zinc-200 bg-white p-5">
-          <div className="mb-3 flex items-center justify-between">
+      {/* Groups */}
+      {groupBalances.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-zinc-900">Groups</h2>
-            <Link href="/groups" className="text-sm text-emerald-700">
-              View all
-            </Link>
+            <Link href="/groups" className="text-xs text-emerald-700 font-medium">View all</Link>
           </div>
-          {groupBalances.length === 0 ? (
-            <p className="text-sm text-zinc-500">
-              No groups yet.{" "}
-              <Link href="/groups" className="text-emerald-700">
-                Create one
+          <div className="rounded-2xl bg-white border border-zinc-100 divide-y divide-zinc-100">
+            {groupBalances.map(({ group, myBalance }) => (
+              <Link
+                key={group.id}
+                href={`/groups/${group.id}`}
+                className="flex items-center justify-between px-4 py-3"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm">
+                    {group.name[0].toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-zinc-900">{group.name}</span>
+                </div>
+                <BalanceText amountCents={myBalance} currency={group.currency} />
               </Link>
-              .
-            </p>
-          ) : (
-            <ul className="divide-y divide-zinc-100">
-              {groupBalances.map(({ group, myBalance }) => (
-                <li key={group.id} className="flex items-center justify-between py-2">
-                  <Link
-                    href={`/groups/${group.id}`}
-                    className="text-sm font-medium text-zinc-900 hover:text-emerald-700"
-                  >
-                    {group.name}
-                  </Link>
-                  <BalanceText amountCents={myBalance} currency={group.currency} />
-                </li>
-              ))}
-            </ul>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
-        <h2 className="mb-3 font-semibold text-zinc-900">Recent activity</h2>
-        <ActivityFeed items={activity} currentUserId={user.id} returnTo="/dashboard" />
+      {/* Recent activity */}
+      <div>
+        <h2 className="font-semibold text-zinc-900 mb-3">Recent activity</h2>
+        <div className="rounded-2xl bg-white border border-zinc-100">
+          <ActivityFeed items={activity} currentUserId={user.id} returnTo="/dashboard" />
+        </div>
       </div>
     </div>
   );

@@ -22,38 +22,38 @@ export default async function FriendsPage() {
   const netMap = await computeUserNetMap(user.id);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Friends</h1>
+    <div className="flex flex-col gap-5">
+      <h1 className="text-xl font-bold text-zinc-900">Friends</h1>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
-        <h2 className="mb-3 font-semibold text-zinc-900">Add a friend</h2>
+      <div className="rounded-2xl bg-white border border-zinc-100 p-4">
+        <h2 className="text-sm font-semibold text-zinc-700 mb-3">Add a friend</h2>
         <AddFriendForm />
       </div>
 
-      <div className="rounded-lg border border-zinc-200 bg-white p-5">
-        {friends.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            You haven&apos;t added any friends yet.
-          </p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {friends.map((f) => (
-              <li key={f.id} className="flex items-center justify-between py-3">
-                <div>
-                  <Link
-                    href={`/friends/${f.id}`}
-                    className="font-medium text-zinc-900 hover:text-emerald-700"
-                  >
-                    {f.name}
-                  </Link>
-                  <p className="text-xs text-zinc-500">{f.email}</p>
+      {friends.length === 0 ? (
+        <p className="text-sm text-zinc-500 text-center py-8">No friends yet. Add one above.</p>
+      ) : (
+        <div className="rounded-2xl bg-white border border-zinc-100 divide-y divide-zinc-100">
+          {friends.map((f) => (
+            <Link
+              key={f.id}
+              href={`/friends/${f.id}`}
+              className="flex items-center justify-between px-4 py-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold">
+                  {f.name[0].toUpperCase()}
                 </div>
-                <BalanceText amountCents={netMap.get(f.id) ?? 0} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                <div>
+                  <p className="text-sm font-medium text-zinc-900">{f.name}</p>
+                  <p className="text-xs text-zinc-400">{f.email}</p>
+                </div>
+              </div>
+              <BalanceText amountCents={netMap.get(f.id) ?? 0} />
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
