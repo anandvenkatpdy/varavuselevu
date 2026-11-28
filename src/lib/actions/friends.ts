@@ -42,5 +42,5 @@ export async function addFriend(
 
   revalidatePath("/friends");
   revalidatePath("/dashboard");
-  return { error: null };
+  return { error: null, success: true };
 }

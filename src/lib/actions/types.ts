@@ -1,1 +1,1 @@
-export type ActionState = { error: string | null };
+export type ActionState = { error: string | null; success?: boolean };
