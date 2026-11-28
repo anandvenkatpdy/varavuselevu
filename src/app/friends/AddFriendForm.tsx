@@ -36,7 +36,7 @@ export default function AddFriendForm() {
         {pending ? "Adding…" : "Add friend"}
       </button>
       {state?.error && <p className="w-full text-sm text-red-600">{state.error}</p>}
-      {!state?.error && (state as { success?: boolean })?.success && (
+      {!state?.error && state?.success && (
         <p className="w-full text-sm text-emerald-700">Friend added!</p>
       )}
     </form>
